@@ -139,22 +139,42 @@ function findSteps(scheme_id) {
         }
       ]
   */
+
+	return db('steps as st')
+		.leftJoin('schemes as sc', 'st.scheme_id', 'sc.scheme_id')
+		.where('st.scheme_id', scheme_id)
+		.select('st.step_id', 'st.step_number', 'st.instructions', 'sc.scheme_name')
+		.orderBy('st.step_number', 'asc');
 }
 
-function add(scheme) {
+async function add(scheme) {
 	// EXERCISE D
 	/*
     1D- This function creates a new scheme and resolves to _the newly created scheme_.
   */
+
+	const [scheme_id] = await db('schemes').insert(scheme);
+	console.log(scheme_id);
+	const addedScheme = await db('schemes').where({ scheme_id }).first();
+
+	return addedScheme;
 }
 
-function addStep(scheme_id, step) {
+async function addStep(scheme_id, step) {
 	// EXERCISE E
 	/*
     1E- This function adds a step to the scheme with the given `scheme_id`
     and resolves to _all the steps_ belonging to the given `scheme_id`,
     including the newly created one.
   */
+
+	await db('steps').insert({
+		instructions: step.instructions,
+		step_number: step.step_number,
+		scheme_id
+	});
+
+	return findById(scheme_id);
 }
 
 module.exports = {
